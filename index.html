@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Ellipse from trhee points html5 canvas</title>
+    </head>
+    <body>
+        <canvas id="myCanvas" width="500" height="500"></canvas>
+        <script>
+            function drawEllipseFromThreePoints(F1, F2, P, ctx) {
+                "use strict";
+                function distance(x, y) {
+                    return Math.sqrt(Math.pow((y.x - x.x), 2) + Math.pow((y.y - x.y), 2));
+                }
+
+                function midPoint(x,y) {
+                    return {
+                        x : ((x.x + y.x) / 2),
+                        y : ((x.y + y.y) / 2)
+                    }
+
+                }
+
+                function addPoints(x, y) {
+                    return {
+                        x : (x.x + y.x),
+                        y : (x.y + y.y)
+                        }
+                }
+
+                function substractPoints(x, y) {
+                    return {
+                        x : (x.x - y.x),
+                        y : (x.y - y.y)
+                        }
+                }
+
+		        var context = myCanvas.getContext('2d'),
+                    a, b, K, v, d, A1, A2, B1, B2, C1, C2, C3, C4;
+
+
+                if ((F1.x === F2.x) && (F1.y === F2.y)) {
+                    a = distance(F1, P);
+                    b = a;
+                    K = F1;
+                    v = {x: 1 ,y : 0};
+                    A1 = { x : K.x + a, y : K.y };
+                    A2 = { x : K.x - a, y : K.y };
+                    B1 = { x : K.x, y : K.y - b };
+                    B2 = { x : K.x, y : K.y + b };
+                    C1 = { x : A1.x, y : B1.y };
+                    C2 = { x : A1.x, y : B2.y };
+                    C3 = { x : A2.x, y : B2.y };
+                    C4 = { x : A2.x, y : B1.y };
+		        } else {
+                    a = (distance(F1, P) + distance(F2, P)) / 2;
+                    K = midPoint(F1, F2);
+                    v = substractPoints(F2,F1);
+                    d = distance(F2, F1);
+                    v = { x : (v.x/d), y : (v.y/d) };
+                    A1 = addPoints(K, { x : v.x * a, y : v.y * a});
+                    A2 = substractPoints(K, { x : v.x * a, y : v.y * a});
+                    b = Math.sqrt(Math.pow(a,2) - Math.pow(d / 2, 2));
+                    B1 = addPoints(K, {x : -v.y * b, y : v.x * b});
+                    B2 = substractPoints(K, {x : -v.y * b, y : v.x * b});
+                    C1 = addPoints(B1, { x : v.x * a, y : v.y * a});
+                    C2 = addPoints(B2, { x : v.x * a, y : v.y * a});
+                    C3 = substractPoints(B2, {x : v.y * a, y : v.x * a});
+                    C4 = substractPoints(B1, {x : v.y * a, y : v.x * a});
+		        }
+                console.log("//draw with transforms");
+                context.setTransform(v.x,v.y,-v.y,v.x,K.x,K.y);
+                context.transform(a/b, 0, 0, 1, 0, 0);
+                context.beginPath();
+                context.arc(0, 0, b, 0, Math.PI * 2, true);
+                context.stroke();
+                context.setTransform(1, 0, 0, 1, 0, 0);
+                console.log("//draw with translate");
+                context.save();
+                context.translate(K.x, K.y);
+                context.rotate(Math.atan2(v.x, v.y));
+                context.scale(a/b,1);
+                context.beginPath();
+                context.arc(0, 0, b, 0, Math.PI * 2, true);
+                context.fill();
+                context.restore();
+                console.log("//draw with bezier");
+                context.beginPath();
+                context.bezierCurveTo(B1.x, B1.y, C1.x, C1.y, A1.x, A1.y);
+                context.bezierCurveTo(A1.x, A1.y, C2.x, C2.y, B2.x, B2.y);
+                context.bezierCurveTo(B2.x, B2.y, C3.x, C3.y, A2.x, A2.y);
+                context.bezierCurveTo(A2.x, A2.y, C4.x, C4.y, B1.x, B1.y);
+                context.stroke();
+                context.fill();
+                console.log("//draw points");
+                context.font = "14px Arial";
+                context.fillText("B1",B1.x, B1.y);
+                context.fillText("B2",B2.x, B2.y);
+                context.fillText("A1",A1.x, A1.y);
+                context.fillText("A2",A2.x, A2.y);
+                context.fillText("C1",C1.x, C1.y);
+                context.fillText("C2",C2.x, C2.y);
+                context.fillText("C3",C3.x, C3.y);
+                context.fillText("C4",C4.x, C4.y);
+                context.fillText("K",K.x, K.y);
+                context.fillText("F1",F1.x, F1.y);
+                context.fillText("F2",F2.x, F2.y);
+                context.moveTo(F1.x, F1.y);
+                context.arc(F1.x, F1.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(F2.x, F2.y);
+                context.arc(F2.x, F2.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(K.x, K.y);
+                context.arc(K.x, K.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(B1.x, B1.y);
+                context.arc(B1.x, B1.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(B2.x, B2.y);
+                context.arc(B2.x, B2.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(A1.x, A1.y);
+                context.arc(A1.x, A1.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(A2.x, A2.y);
+                context.arc(A2.x, A2.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(C1.x, C1.y);
+                context.arc(C1.x, C1.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(C2.x, C2.y);
+                context.arc(C2.x, C2.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(C3.x, C3.y);
+                context.arc(C3.x, C3.y, 3, 0, Math.PI * 2, true);
+                context.moveTo(C4.x, C4.y);
+                context.arc(C4.x, C4.y, 3, 0, Math.PI * 2, true);
+                context.fill();
+                context.stroke();
+                
+
+            }
+            drawEllipseFromThreePoints({x : 200, y : 100}, {x : 400, y : 300}, {x : 250, y : 250});
+            drawEllipseFromThreePoints({x : 75, y : 200}, {x : 75, y : 200}, {x : 75, y : 250});
+        </script>
+    </body>
+</html>
+
